@@ -47,7 +47,7 @@ use std::fmt;
 use std::io::Write;
 use std::sync::{Arc, Mutex};
 
-use chrono::{DateTime, Local};
+use chrono::Local;
 use once_cell::sync::Lazy;
 use serde::Serialize;
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
@@ -1098,6 +1098,9 @@ mod tests {
             level: Level::Debug,
             use_colors: false,
             show_timestamp: false,
+            json_output: false,
+            timestamp_format: "%Y-%m-%d %H:%M:%S%.3f".to_string(),
+            field_order: None,
         };
 
         let logger = Logger::with_config(config.clone());
@@ -1143,13 +1146,13 @@ mod tests {
         let now = Local::now();
 
         let entry = LogEntry {
-            level: Level::Info,
+            level: Level::Info.as_str().to_string(),
             message: "test message".to_string(),
             fields: HashMap::new(),
-            timestamp: now,
+            timestamp: now.format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string(),
         };
 
-        assert_eq!(entry.level, Level::Info);
+        assert_eq!(entry.level, "INFO");
         assert_eq!(entry.message, "test message");
         assert!(entry.fields.is_empty());
     }
@@ -1278,10 +1281,10 @@ mod tests {
         let field_order = vec!["level".to_string(), "message".to_string(), "custom_field".to_string()];
         let logger = Logger::new()
             .with_json_output(true)
-            .with_field_order(field_order);
+            .with_field_order(field_order.clone());
         
         assert!(logger.config.json_output);
-        assert_eq!(logger.config.field_order, Some(field_order));
+        assert_eq!(logger.config.field_order, Some(field_order.clone()));
     }
 
     #[test]
