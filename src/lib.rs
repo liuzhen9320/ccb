@@ -505,24 +505,27 @@ impl Logger {
 
         // Create JSON object with proper field order
         let mut json_map = serde_json::Map::new();
-        
+
         // Add timestamp if enabled
         if self.config.show_timestamp {
-            json_map.insert("timestamp".to_string(), serde_json::Value::String(
-                entry.timestamp.clone()
-            ));
+            json_map.insert(
+                "timestamp".to_string(),
+                serde_json::Value::String(entry.timestamp.clone()),
+            );
         }
-        
+
         // Add level
-        json_map.insert("level".to_string(), serde_json::Value::String(
-            entry.level.clone()
-        ));
-        
+        json_map.insert(
+            "level".to_string(),
+            serde_json::Value::String(entry.level.clone()),
+        );
+
         // Add message
-        json_map.insert("message".to_string(), serde_json::Value::String(
-            entry.message.clone()
-        ));
-        
+        json_map.insert(
+            "message".to_string(),
+            serde_json::Value::String(entry.message.clone()),
+        );
+
         // Add fields with custom order
         if let Some(ref field_order) = self.config.field_order {
             for field_name in field_order {
@@ -547,7 +550,7 @@ impl Logger {
         if let Ok(json_str) = serde_json::to_string(&json_map) {
             let _ = writeln!(stderr, "{}", json_str);
         }
-        
+
         let _ = stderr.flush();
     }
 
@@ -572,10 +575,7 @@ impl Logger {
         }
 
         // Write level with color and bold
-        let _ = stderr.set_color(
-            ColorSpec::new()
-                .set_bold(true),
-        );
+        let _ = stderr.set_color(ColorSpec::new().set_bold(true));
         let _ = write!(stderr, "{} ", entry.level);
         let _ = stderr.reset();
 
@@ -586,7 +586,8 @@ impl Logger {
         if let Some(ref field_order) = self.config.field_order {
             for field_name in field_order {
                 if let Some(value) = entry.fields.get(field_name) {
-                    let _ = stderr.set_color(ColorSpec::new().set_fg(Some(Color::Rgb(128, 128, 128))));
+                    let _ =
+                        stderr.set_color(ColorSpec::new().set_fg(Some(Color::Rgb(128, 128, 128))));
                     let _ = write!(stderr, " {}=", field_name);
                     let _ = stderr.reset();
                     let _ = write!(stderr, "{}", value);
@@ -595,7 +596,8 @@ impl Logger {
             // Add remaining fields
             for (key, value) in &entry.fields {
                 if !field_order.contains(key) {
-                    let _ = stderr.set_color(ColorSpec::new().set_fg(Some(Color::Rgb(128, 128, 128))));
+                    let _ =
+                        stderr.set_color(ColorSpec::new().set_fg(Some(Color::Rgb(128, 128, 128))));
                     let _ = write!(stderr, " {}=", key);
                     let _ = stderr.reset();
                     let _ = write!(stderr, "{}", value);
@@ -1019,7 +1021,7 @@ mod tests {
     /// Tests JSON output configuration and formatting.
     fn test_json_output() {
         let logger = Logger::new().with_json_output(true);
-        
+
         // Test that the configuration is set correctly
         assert!(logger.config.json_output);
     }
@@ -1029,7 +1031,7 @@ mod tests {
     fn test_timestamp_format() {
         let custom_format = "%H:%M:%S";
         let logger = Logger::new().with_timestamp_format(custom_format);
-        
+
         assert_eq!(logger.config.timestamp_format, custom_format);
     }
 
@@ -1042,7 +1044,7 @@ mod tests {
             "message".to_string(),
         ];
         let logger = Logger::new().with_field_order(expected_order.clone());
-        
+
         assert_eq!(logger.config.field_order, Some(expected_order));
     }
 
@@ -1050,10 +1052,10 @@ mod tests {
     /// Tests that JSON output creates valid JSON strings.
     fn test_json_output_validity() {
         let logger = Logger::new().with_json_output(true);
-        
+
         // Test with a simple message
         logger.info("Test message", &[("key", "value")]);
-        
+
         // In a real test, we would capture stderr and verify JSON validity
         // For now, we just ensure the logger doesn't panic
     }
@@ -1061,11 +1063,15 @@ mod tests {
     #[test]
     /// Tests combination of JSON output and field order.
     fn test_json_with_field_order() {
-        let field_order = vec!["level".to_string(), "message".to_string(), "custom_field".to_string()];
+        let field_order = vec![
+            "level".to_string(),
+            "message".to_string(),
+            "custom_field".to_string(),
+        ];
         let logger = Logger::new()
             .with_json_output(true)
             .with_field_order(field_order.clone());
-        
+
         assert!(logger.config.json_output);
         assert_eq!(logger.config.field_order, Some(field_order.clone()));
     }
@@ -1077,9 +1083,9 @@ mod tests {
         let logger = Logger::new()
             .with_timestamp_format(format)
             .with_timestamp(true);
-        
+
         logger.info("Test timestamp format", &[]);
-        
+
         // Test that the format is stored correctly
         assert_eq!(logger.config.timestamp_format, format);
     }
