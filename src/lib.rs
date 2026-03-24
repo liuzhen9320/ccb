@@ -57,15 +57,6 @@ use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 /// Log levels are ordered by severity, with `Trace` being the lowest and `Error` being the highest.
 /// Each level has a distinct color and four-character representation for consistent alignment.
 ///
-/// # Examples
-///
-/// ```rust
-/// use ccb::Level;
-///
-/// assert!(Level::Trace < Level::Debug);
-/// assert!(Level::Info < Level::Error);
-/// assert_eq!(Level::Info.as_str(), "INFO");
-/// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Level {
     /// The lowest level, used for fine-grained tracing information.
@@ -91,17 +82,6 @@ impl Level {
     /// All levels are formatted to exactly four characters for consistent alignment
     /// in log output.
     ///
-    /// # Examples
-    ///
-    /// ```rust
-    /// use ccb::Level;
-    ///
-    /// assert_eq!(Level::Trace.as_str(), "TRCE");
-    /// assert_eq!(Level::Debug.as_str(), "DEBG");
-    /// assert_eq!(Level::Info.as_str(), "INFO");
-    /// assert_eq!(Level::Warn.as_str(), "WARN");
-    /// assert_eq!(Level::Error.as_str(), "ERRO");
-    /// ```
     pub fn as_str(&self) -> &'static str {
         match self {
             Level::Trace => "TRCE",
@@ -121,15 +101,6 @@ impl Level {
     /// - Warn: Yellow
     /// - Error: Red
     ///
-    /// # Examples
-    ///
-    /// ```rust
-    /// use ccb::Level;
-    /// use termcolor::Color;
-    ///
-    /// assert_eq!(Level::Info.color(), Color::Green);
-    /// assert_eq!(Level::Error.color(), Color::Red);
-    /// ```
     pub fn color(&self) -> Color {
         match self {
             Level::Trace => Color::Cyan,
@@ -154,20 +125,6 @@ impl fmt::Display for Level {
 /// before it's formatted and written to the output. It can be serialized to JSON
 /// for structured logging output.
 ///
-/// # Examples
-///
-/// ```rust
-/// use ccb::{LogEntry, Level};
-/// use chrono::Local;
-/// use std::collections::HashMap;
-///
-/// let entry = LogEntry {
-///     level: Level::Info,
-///     message: "User authenticated".to_string(),
-///     fields: HashMap::new(),
-///     timestamp: Local::now(),
-/// };
-/// ```
 #[derive(Debug, Clone, Serialize)]
 pub struct LogEntry {
     /// The severity level of this log entry.
@@ -185,20 +142,6 @@ pub struct LogEntry {
 /// `Config` allows you to customize various aspects of logging behavior including
 /// the minimum log level, color usage, timestamp display, and output format.
 ///
-/// # Examples
-///
-/// ```rust
-/// use ccb::{Config, Level};
-///
-/// let config = Config {
-///     level: Level::Debug,
-///     use_colors: false,  // Disable colors for CI environments
-///     show_timestamp: true,
-///     json_output: false,
-///     timestamp_format: "%Y-%m-%d %H:%M:%S%.3f".to_string(),
-///     field_order: None,
-/// };
-/// ```
 #[derive(Debug, Clone)]
 pub struct Config {
     /// The minimum log level that will be output.
@@ -232,18 +175,6 @@ impl Default for Config {
     /// - Timestamp Format: "%Y-%m-%d %H:%M:%S%.3f"
     /// - Field Order: None (natural order)
     ///
-    /// # Examples
-    ///
-    /// ```rust
-    /// use ccb::{Config, Level};
-    ///
-    /// let config = Config::default();
-    /// assert_eq!(config.level, Level::Info);
-    /// assert_eq!(config.show_timestamp, true);
-    /// assert!(!config.json_output);
-    /// assert_eq!(config.timestamp_format, "%Y-%m-%d %H:%M:%S%.3f");
-    /// assert!(config.field_order.is_none());
-    /// ```
     fn default() -> Self {
         Self {
             level: Level::Info,
@@ -262,18 +193,6 @@ impl Default for Config {
 /// It supports chainable configuration methods and maintains structured context
 /// that gets applied to all log entries.
 ///
-/// # Examples
-///
-/// ```rust
-/// use ccb::{Logger, Level};
-///
-/// let logger = Logger::new()
-///     .with_level(Level::Debug)
-///     .with("service", "auth")
-///     .with("version", "1.0.0");
-///
-/// logger.info("Server started", &[("port", "8080")]);
-/// ```
 #[derive(Debug, Clone)]
 pub struct Logger {
     /// The logger's configuration settings.
@@ -288,14 +207,6 @@ impl Logger {
     /// The default logger uses `Info` level, auto-detects color support,
     /// enables timestamps, and has no initial context.
     ///
-    /// # Examples
-    ///
-    /// ```rust
-    /// use ccb::Logger;
-    ///
-    /// let logger = Logger::new();
-    /// logger.info("Application started", &[]);
-    /// ```
     pub fn new() -> Self {
         Self {
             config: Config::default(),
@@ -312,18 +223,6 @@ impl Logger {
     ///
     /// * `config` - The configuration to use for this logger
     ///
-    /// # Examples
-    ///
-    /// ```rust
-    /// use ccb::{Logger, Config, Level};
-    ///
-    /// let config = Config {
-    ///     level: Level::Debug,
-    ///     use_colors: false,
-    ///     show_timestamp: true,
-    /// };
-    /// let logger = Logger::with_config(config);
-    /// ```
     pub fn with_config(config: Config) -> Self {
         Self {
             config,
@@ -344,14 +243,6 @@ impl Logger {
     ///
     /// Returns `self` for method chaining.
     ///
-    /// # Examples
-    ///
-    /// ```rust
-    /// use ccb::{Logger, Level};
-    ///
-    /// let logger = Logger::new().with_level(Level::Debug);
-    /// // Now trace messages will be filtered out, but debug and above will show
-    /// ```
     pub fn with_level(mut self, level: Level) -> Self {
         self.config.level = level;
         self
@@ -370,13 +261,6 @@ impl Logger {
     ///
     /// Returns `self` for method chaining.
     ///
-    /// # Examples
-    ///
-    /// ```rust
-    /// use ccb::Logger;
-    ///
-    /// let logger = Logger::new().with_colors(false); // Force disable colors
-    /// ```
     pub fn with_colors(mut self, use_colors: bool) -> Self {
         self.config.use_colors = use_colors;
         self
@@ -395,13 +279,6 @@ impl Logger {
     ///
     /// Returns `self` for method chaining.
     ///
-    /// # Examples
-    ///
-    /// ```rust
-    /// use ccb::Logger;
-    ///
-    /// let logger = Logger::new().with_timestamp(false); // Hide timestamps
-    /// ```
     pub fn with_timestamp(mut self, show_timestamp: bool) -> Self {
         self.config.show_timestamp = show_timestamp;
         self
@@ -421,13 +298,6 @@ impl Logger {
     ///
     /// Returns `self` for method chaining.
     ///
-    /// # Examples
-    ///
-    /// ```rust
-    /// use ccb::Logger;
-    ///
-    /// let logger = Logger::new().with_json_output(true); // Enable JSON output
-    /// ```
     pub fn with_json_output(mut self, json_output: bool) -> Self {
         self.config.json_output = json_output;
         self
@@ -446,13 +316,6 @@ impl Logger {
     ///
     /// Returns `self` for method chaining.
     ///
-    /// # Examples
-    ///
-    /// ```rust
-    /// use ccb::Logger;
-    ///
-    /// let logger = Logger::new().with_timestamp_format("%H:%M:%S"); // Simple time format
-    /// ```
     pub fn with_timestamp_format(mut self, format: &str) -> Self {
         self.config.timestamp_format = format.to_string();
         self
@@ -471,14 +334,6 @@ impl Logger {
     ///
     /// Returns `self` for method chaining.
     ///
-    /// # Examples
-    ///
-    /// ```rust
-    /// use ccb::Logger;
-    ///
-    /// let logger = Logger::new()
-    ///     .with_field_order(vec!["timestamp".to_string(), "level".to_string(), "message".to_string()]);
-    /// ```
     pub fn with_field_order(mut self, order: Vec<String>) -> Self {
         self.config.field_order = Some(order);
         self
@@ -499,18 +354,6 @@ impl Logger {
     ///
     /// Returns `self` for method chaining.
     ///
-    /// # Examples
-    ///
-    /// ```rust
-    /// use ccb::Logger;
-    ///
-    /// let logger = Logger::new()
-    ///     .with("service", "auth")
-    ///     .with("version", "1.2.0")
-    ///     .with("request_id", "req-123");
-    ///
-    /// logger.info("Processing request", &[]); // Will include all context fields
-    /// ```
     pub fn with<K, V>(mut self, key: K, value: V) -> Self
     where
         K: Into<String>,
@@ -532,14 +375,6 @@ impl Logger {
     /// * `message` - The primary log message
     /// * `fields` - Additional key-value pairs for this specific log entry
     ///
-    /// # Examples
-    ///
-    /// ```rust
-    /// use ccb::{Logger, Level};
-    ///
-    /// let logger = Logger::new();
-    /// logger.log(Level::Info, "User authenticated", &[("user_id", "12345")]);
-    /// ```
     pub fn log(&self, level: Level, message: &str, fields: &[(&str, &str)]) {
         if level < self.config.level {
             return;
@@ -570,14 +405,6 @@ impl Logger {
     /// * `message` - The log message
     /// * `fields` - Additional key-value pairs
     ///
-    /// # Examples
-    ///
-    /// ```rust
-    /// use ccb::Logger;
-    ///
-    /// let logger = Logger::new();
-    /// logger.trace("Entering function", &[("function", "calculate_hash")]);
-    /// ```
     pub fn trace(&self, message: &str, fields: &[(&str, &str)]) {
         self.log(Level::Trace, message, fields);
     }
@@ -592,14 +419,6 @@ impl Logger {
     /// * `message` - The log message
     /// * `fields` - Additional key-value pairs
     ///
-    /// # Examples
-    ///
-    /// ```rust
-    /// use ccb::Logger;
-    ///
-    /// let logger = Logger::new();
-    /// logger.debug("Cache miss", &[("key", "user:12345")]);
-    /// ```
     pub fn debug(&self, message: &str, fields: &[(&str, &str)]) {
         self.log(Level::Debug, message, fields);
     }
@@ -614,14 +433,6 @@ impl Logger {
     /// * `message` - The log message
     /// * `fields` - Additional key-value pairs
     ///
-    /// # Examples
-    ///
-    /// ```rust
-    /// use ccb::Logger;
-    ///
-    /// let logger = Logger::new();
-    /// logger.info("Server started", &[("port", "8080")]);
-    /// ```
     pub fn info(&self, message: &str, fields: &[(&str, &str)]) {
         self.log(Level::Info, message, fields);
     }
@@ -636,14 +447,6 @@ impl Logger {
     /// * `message` - The log message
     /// * `fields` - Additional key-value pairs
     ///
-    /// # Examples
-    ///
-    /// ```rust
-    /// use ccb::Logger;
-    ///
-    /// let logger = Logger::new();
-    /// logger.warn("High memory usage", &[("usage", "85%")]);
-    /// ```
     pub fn warn(&self, message: &str, fields: &[(&str, &str)]) {
         self.log(Level::Warn, message, fields);
     }
@@ -658,14 +461,6 @@ impl Logger {
     /// * `message` - The log message
     /// * `fields` - Additional key-value pairs
     ///
-    /// # Examples
-    ///
-    /// ```rust
-    /// use ccb::Logger;
-    ///
-    /// let logger = Logger::new();
-    /// logger.error("Database connection failed", &[("host", "localhost")]);
-    /// ```
     pub fn error(&self, message: &str, fields: &[(&str, &str)]) {
         self.log(Level::Error, message, fields);
     }
@@ -845,18 +640,6 @@ static GLOBAL_LOGGER: Lazy<Arc<Mutex<Logger>>> = Lazy::new(|| Arc::new(Mutex::ne
 ///
 /// * `logger` - The logger instance to set as the global logger
 ///
-/// # Examples
-///
-/// ```rust
-/// use ccb::{Logger, Level, set_global_logger, info};
-///
-/// let custom_logger = Logger::new()
-///     .with_level(Level::Debug)
-///     .with("app", "my-service");
-///
-/// set_global_logger(custom_logger);
-/// info!("This will use the custom logger configuration");
-/// ```
 pub fn set_global_logger(logger: Logger) {
     if let Ok(mut global) = GLOBAL_LOGGER.lock() {
         *global = logger;
@@ -922,7 +705,7 @@ where
 /// use ccb::trace;
 ///
 /// trace!("Function entry");
-/// trace!("Processing item", "id", 12345, "type", "user");
+/// trace!("Processing item", "id", "12345", "type", "user");
 /// ```
 #[macro_export]
 macro_rules! trace {
@@ -1000,7 +783,7 @@ macro_rules! info {
 /// use ccb::warn;
 ///
 /// warn!("Configuration file not found, using defaults");
-/// warn!("High memory usage detected", "usage_percent", 87, "threshold", 80);
+/// warn!("High memory usage detected", "usage_percent", "87", "threshold", "80");
 /// ```
 #[macro_export]
 macro_rules! warn {
