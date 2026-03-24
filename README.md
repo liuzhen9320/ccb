@@ -1,4 +1,4 @@
-# 🎨 CCB Logger
+# CCB Logger
 
 [![Rust](https://img.shields.io/badge/rust-stable-brightgreen.svg)](https://www.rust-lang.org/)
 [![Latest version](https://img.shields.io/crates/v/ccb.svg)](https://crates.io/crates/ccb)
@@ -9,18 +9,18 @@
 
 CCB brings elegance and visual appeal to the Rust ecosystem. It is designed for command-line interface (CLI) applications that want to achieve beautiful, readable, and structured log output.
 
-## ✨ Features
+## Features
 
-- 🎯 **Semantic Log Levels**: Trace, Debug, Info, Warn, Error with four-character alignment
-- 🌈 **Automatic Colors**: Beautiful colored output with smart terminal detection  
-- ⏰ **Precise Timestamps**: High-precision timestamps in `2006-01-02 03:04:05.789` format
-- 🔗 **Chainable Context**: Add structured key-value pairs with `with(key, value)`
-- 🛠️ **Simple Macros**: Easy-to-use macros with variadic arguments support
-- 🎛️ **Global Logger**: Set and use a global logger instance across your application
-- 📱 **Terminal Friendly**: No icons, maximum compatibility across terminals
-- ⚡ **Zero Config**: Works beautifully out of the box with sensible defaults
+- **Semantic Log Levels**: Trace, Debug, Info, Warn, Error with four-character alignment
+- **Automatic Colors**: Beautiful colored output with smart terminal detection  
+- **Precise Timestamps**: High-precision timestamps in `2006-01-02 03:04:05.789` format
+- **Chainable Context**: Add structured key-value pairs with `with(key, value)`
+- **Simple Macros**: Easy-to-use macros with variadic arguments support
+- **Global Logger**: Set and use a global logger instance across your application
+- **Terminal Friendly**: No icons, maximum compatibility across terminals
+- **Zero Config**: Works beautifully out of the box with sensible defaults
 
-## 🚀 Quick Start
+## Quick Start
 
 Add CCB Logger to your `Cargo.toml`:
 
@@ -46,6 +46,23 @@ fn main() {
 }
 ```
 
+### JSON Output Example
+
+```rust
+use ccb::Logger;
+
+fn main() {
+    // Enable JSON output for structured logging
+    let logger = Logger::new()
+        .with_json_output(true)
+        .with_timestamp_format("%Y-%m-%dT%H:%M:%S%.3fZ");
+    
+    logger.info("User authenticated", "user_id", "12345", "ip", "192.168.1.100");
+    
+    // Output: {"timestamp":"2024-01-15T14:30:25.123Z","level":"INFO","message":"User authenticated","user_id":"12345","ip":"192.168.1.100"}
+}
+```
+
 ### Custom Logger Configuration
 
 ```rust
@@ -57,6 +74,13 @@ fn main() {
         .with_level(Level::Debug)
         .with_colors(true)
         .with_timestamp(true)
+        .with_json_output(false)
+        .with_timestamp_format("%Y-%m-%d %H:%M:%S%.3f")
+        .with_field_order(vec![
+            "timestamp".to_string(),
+            "level".to_string(), 
+            "message".to_string()
+        ])
         .with("service", "my-app")
         .with("version", "1.0.0");
     
@@ -66,6 +90,26 @@ fn main() {
     // Now all macro calls will use the configured logger
     debug!("Debug message with context");
     info!("Request processed", "method", "GET", "path", "/api/users");
+}
+```
+
+### JSON Output Configuration
+
+```rust
+use ccb::Logger;
+
+fn main() {
+    // Enable JSON output for machine-readable logs
+    let logger = Logger::new()
+        .with_json_output(true)
+        .with_timestamp_format("%Y-%m-%dT%H:%M:%S%.3fZ")
+        .with_field_order(vec!["timestamp", "level", "message", "service"]);
+    
+    // Log messages will be output as JSON
+    info!("User login", "user_id", "12345", "ip", "192.168.1.100");
+    
+    // Output example:
+    // {"timestamp":"2024-01-15T14:30:25.123Z","level":"INFO","message":"User login","user_id":"12345","ip":"192.168.1.100","service":"my-app"}
 }
 ```
 
@@ -93,7 +137,7 @@ fn main() {
 }
 ```
 
-## 📊 Output Examples
+### Output Examples
 
 ```
 2024-01-15 14:30:25.1234 INFO Application started
@@ -103,19 +147,19 @@ fn main() {
 2024-01-15 14:30:25.1238 DEBG Cache hit key=user:12345 ttl=300
 ```
 
-## 🎯 Log Levels
+## Log Levels
 
 CCB supports five log levels with four-character alignment:
 
-| Level | Code | Color  | Description |
-|-------|------|--------|-------------|
+| Level | Code   | Color  | Description |
+|-------|--------|--------|-------------|
 | Trace | `TRCE` | Cyan   | 🔍 Detailed tracing information |
 | Debug | `DEBG` | Blue   | 🐛 Debug information for developers |  
 | Info  | `INFO` | Green  | ℹ️ General information messages |
 | Warn  | `WARN` | Yellow | ⚠️ Warning messages |
-| Error | ERRO | Red    | ❌ Error conditions |
+| Error | `ERRO` | Red    | ❌ Error conditions |
 
-## 🔧 Configuration Options
+## Configuration Options
 
 ### Logger Methods
 
@@ -132,7 +176,7 @@ CCB automatically detects if output is going to a terminal and enables colors ac
 let logger = Logger::new().with_colors(false); // Force disable colors
 ```
 
-## 🧪 Testing
+## Testing
 
 Run the test suite:
 
@@ -146,7 +190,7 @@ Run tests with output:
 cargo test -- --nocapture
 ```
 
-## 📚 Examples
+## Examples
 
 Check out the `examples/` directory for more usage patterns:
 
@@ -154,7 +198,7 @@ Check out the `examples/` directory for more usage patterns:
 cargo run --example basic_usage
 ```
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
 
@@ -164,18 +208,36 @@ Contributions are welcome! Please feel free to submit a Pull Request. For major 
 4. 📤 Push to the branch (`git push origin feature/amazing-feature`)
 5. 🔄 Open a Pull Request
 
-## 📄 License
+### TODO
+
+1. Add `async` logging methods and `async-std` integration
+2. Avoid HashMap cloning, use `Arc<Context>` or `Cow<str>` for string allocation optimization
+3. Use `RwLock` instead of `Mutex` to avoid deadlock risks
+4. Split the 1000+ lines `lib.rs` into multiple modules (levels, formatters, outputs, etc.)
+5. Add JSON Schema support and custom field serialization
+6. Add file output, rotation, and compression features
+7. Support complex filtering based on field values and regex patterns
+8. Add boundary tests, stress tests, and concurrency tests
+9. Support configuration file and environment variable driven configuration
+10. Support custom formatters and interceptors
+11. Output to console, file, and network simultaneously
+12. Sampling and aggregation for high-frequency logs
+13. Lightweight mode optimized for production environments
+14. Automatically add call stack, thread ID, and other fields
+15. Automatic detection of development/testing/production environments
+
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - Inspired by [charmbracelet/log](https://github.com/charmbracelet/log) ❤️
 - CCB has **no real meaning**, the name was given by a friend
 - Built with ❤️ for the Rust community
 - Thanks to all contributors! 🎉
 
-## 🔗 Related Projects
+## Related Projects
 
 - [charmbracelet/log](https://github.com/charmbracelet/log) - The original Go implementation
 - [env_logger](https://crates.io/crates/env_logger) - Simple logger controlled via environment
