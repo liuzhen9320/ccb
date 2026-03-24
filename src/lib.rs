@@ -769,13 +769,10 @@ impl Logger {
         // Write timestamp if enabled
         if self.config.show_timestamp {
             let _ = stderr.set_color(ColorSpec::new().set_fg(Some(Color::Rgb(128, 128, 128))));
-            let _ = write!(
-                stderr,
-                "{} ",
-                chrono::DateTime::parse_from_rfc3339(&entry.timestamp)
-                    .map(|dt| dt.format(&self.config.timestamp_format))
-                    .unwrap_or_else(|_| entry.timestamp.as_str())
-            );
+            let timestamp_str = chrono::DateTime::parse_from_rfc3339(&entry.timestamp)
+                .map(|dt| dt.format(&self.config.timestamp_format).to_string())
+                .unwrap_or_else(|_| entry.timestamp.clone());
+            let _ = write!(stderr, "{} ", timestamp_str);
             let _ = stderr.reset();
         }
 
